@@ -1,11 +1,21 @@
 const express = require('express');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
+// --- Email Transporter Setup ---
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 // --- Mock Data ---
 let students = [
@@ -34,7 +44,7 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ success: false, message: 'Invalid username or password' });
 });
 
-app.post('/api/forgot-password', (req, res) => {
+app.post('/api/forgot-password', async (req, res) => {
     const { contact } = req.body;
     if (!contact) return res.status(400).json({ success: false, message: 'Contact is required' });
     
@@ -42,13 +52,39 @@ app.post('/api/forgot-password', (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
     otpStore.set(contact, otp);
     
-    // ✨ SIMULATED SMS / EMAIL ✨
-    console.log(`\n========================================`);
-    console.log(`📨 [OTP SIMULATION] Sending OTP to ${contact}`);
-    console.log(`🔑 Your verification code is: ${otp}`);
-    console.log(`========================================\n`);
+    // Attempt real email dispatch if format looks like email and Env Vars are present
+    if (contact.includes('@') && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        try {
+            await transporter.sendMail({
+                from: `"Sangarsh Science Education" <${process.env.EMAIL_USER}>`,
+                to: contact,
+                subject: 'Your Password Reset OTP',
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #ddd; border-radius: 10px;">
+                        <h2 style="color: #4f46e5; text-align: center;">Sangarsh Science Education</h2>
+                        <h3 style="color: #333; text-align: center;">Password Reset Code</h3>
+                        <p style="text-align: center; color: #555;">You requested a password reset. Please use the following 6-digit OTP to verify your identity:</p>
+                        <div style="background-color: #f4f4f5; padding: 15px; text-align: center; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #000; margin: 20px 0;">
+                            ${otp}
+                        </div>
+                        <p style="text-align: center; font-size: 12px; color: #aaa;">If you did not request this, please ignore this email.</p>
+                    </div>
+                `
+            });
+            console.log(`✅ Authentic Email successfully sent to ${contact}`);
+        } catch (err) {
+            console.error('Email send failed:', err);
+            return res.status(500).json({ success: false, message: 'Failed to send OTP email. Internal Server Error.' });
+        }
+    } else {
+        // Fallback Simulation for local testing or SMS mode
+        console.log(`\n========================================`);
+        console.log(`📨 [OTP SIMULATION] Target: ${contact}`);
+        console.log(`🔑 Verification code: ${otp}`);
+        console.log(`========================================\n`);
+    }
 
-    res.json({ success: true, message: 'OTP generated', otp: otp });
+    res.json({ success: true, message: 'OTP verification sent securely!' });
 });
 
 app.post('/api/verify-otp', (req, res) => {
