@@ -150,20 +150,20 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         students.forEach(s => {
-            const avatarUrl = \`https://ui-avatars.com/api/?name=\${s.name.replace(' ', '+')}&background=random&color=fff\`;
+            const avatarUrl = `https://ui-avatars.com/api/?name=${s.name.replace(' ', '+')}&background=random&color=fff`;
             html += `
                 <tr>
                     <td>
                         <div class="user-cell">
-                            <img src="\${avatarUrl}" class="user-avatar" alt="Avatar"/>
+                            <img src="${avatarUrl}" class="user-avatar" alt="Avatar"/>
                             <div>
-                                <div class="user-name">\${s.name}</div>
-                                <div class="user-sub">#ID-00\${s.id}</div>
+                                <div class="user-name">${s.name}</div>
+                                <div class="user-sub">#ID-00${s.id}</div>
                             </div>
                         </div>
                     </td>
-                    <td style="font-weight: 500;">\${s.grade}</td>
-                    <td>\${s.attendance}</td>
+                    <td style="font-weight: 500;">${s.grade}</td>
+                    <td>${s.attendance}</td>
                     <td><span class="badge badge-success">Enrolled</span></td>
                 </tr>
             `;
@@ -193,19 +193,19 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         teachers.forEach(t => {
-            const avatarUrl = \`https://ui-avatars.com/api/?name=\${t.name.replace(' ', '+')}&background=ec4899&color=fff\`;
+            const avatarUrl = `https://ui-avatars.com/api/?name=${t.name.replace(' ', '+')}&background=ec4899&color=fff`;
             html += `
                 <tr>
                     <td>
                         <div class="user-cell">
-                            <img src="\${avatarUrl}" class="user-avatar" alt="Avatar"/>
+                            <img src="${avatarUrl}" class="user-avatar" alt="Avatar"/>
                             <div>
-                                <div class="user-name">\${t.name}</div>
-                                <div class="user-sub">Faculty ID: \${t.id}</div>
+                                <div class="user-name">${t.name}</div>
+                                <div class="user-sub">Faculty ID: ${t.id}</div>
                             </div>
                         </div>
                     </td>
-                    <td>\${t.subject}</td>
+                    <td>${t.subject}</td>
                     <td><span class="badge badge-pink">Tenured</span></td>
                     <td><a href="#" style="color:var(--primary-light); text-decoration:none;">View Profile</a></td>
                 </tr>
