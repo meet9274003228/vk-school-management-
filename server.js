@@ -48,7 +48,7 @@ app.post('/api/forgot-password', (req, res) => {
     console.log(`🔑 Your verification code is: ${otp}`);
     console.log(`========================================\n`);
 
-    res.json({ success: true, message: 'OTP sent' });
+    res.json({ success: true, message: 'OTP generated', otp: otp });
 });
 
 app.post('/api/verify-otp', (req, res) => {

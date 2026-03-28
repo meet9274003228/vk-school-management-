@@ -79,6 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentContact = contact;
                 otpMessage.textContent = `A 6-digit OTP has been sent to ${contact}`;
                 showForm(otpForm);
+                
+                // Dev mode alert
+                if (data.otp) {
+                    setTimeout(() => alert("DEVELOPMENT MODE:\nYour OTP is: " + data.otp + "\n\n(In a real production app, this would be sent to your phone or email!)"), 500);
+                }
             } else {
                 showMessage(data.message, true);
             }
