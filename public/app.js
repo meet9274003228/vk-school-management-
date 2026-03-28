@@ -1,6 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Check Auth
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
+
     const navBtns = document.querySelectorAll('.nav-btn');
     const contentArea = document.getElementById('content-area');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login.html';
+        });
+    }
 
     // Handle Navigation Clicks
     navBtns.forEach(btn => {

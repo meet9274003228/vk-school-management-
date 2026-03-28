@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - School Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-body">
+    <div class="login-container glass-panel">
+        <div class="logo login-logo">
+            <div class="logo-icon"></div>
+            <h2>EduManage</h2>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+            <h3 class="form-title">Welcome Back</h3>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="login-username" placeholder="admin" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-primary">Sign In</button>
+            <p class="form-footer">Forgot your password? <a href="#" id="show-forgot">Reset it</a></p>
+        </form>
+
+        <!-- Forgot Password Form -->
+        <form id="forgot-form" class="auth-form">
+            <h3 class="form-title">Reset Password</h3>
+            <p class="form-subtitle">Enter your Email or Phone number to receive an authorization OTP.</p>
+            <div class="input-group">
+                <label>Email or Phone</label>
+                <input type="text" id="forgot-contact" placeholder="user@gmail.com or +1234567890" required>
+            </div>
+            <button type="submit" class="btn-primary">Send OTP</button>
+            <p class="form-footer">Remembered? <a href="#" id="show-login-from-forgot">Back to Login</a></p>
+        </form>
+
+        <!-- OTP Verification Form -->
+        <form id="otp-form" class="auth-form">
+            <h3 class="form-title">Verify OTP</h3>
+            <p class="form-subtitle" id="otp-sent-message">We've sent a 6-digit code to your contact.</p>
+            <div class="input-group">
+                <label>Enter OTP</label>
+                <input type="text" id="otp-code" placeholder="123456" maxlength="6" required>
+            </div>
+            <div class="input-group">
+                <label>New Password</label>
+                <input type="password" id="new-password" placeholder="Enter new password" required>
+            </div>
+            <button type="submit" class="btn-primary">Verify & Reset Password</button>
+            <p class="form-footer"><a href="#" id="show-login-from-otp">Cancel</a></p>
+        </form>
+
+        <div id="auth-message" class="auth-message"></div>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>
