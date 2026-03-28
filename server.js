@@ -52,8 +52,11 @@ app.post('/api/forgot-password', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
     otpStore.set(contact, otp);
     
-    // Attempt real email dispatch if format looks like email and Env Vars are present
-    if (contact.includes('@') && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    // Attempt real email dispatch if format looks like email
+    if (contact.includes('@')) {
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            return res.status(500).json({ success: false, message: 'Email Server Not Configured: You must add EMAIL_USER and EMAIL_PASS to your Render Environment Variables!' });
+        }
         try {
             await transporter.sendMail({
                 from: `"Sangarsh Science Education" <${process.env.EMAIL_USER}>`,
@@ -74,17 +77,17 @@ app.post('/api/forgot-password', async (req, res) => {
             console.log(`✅ Authentic Email successfully sent to ${contact}`);
         } catch (err) {
             console.error('Email send failed:', err);
-            return res.status(500).json({ success: false, message: 'Failed to send OTP email. Internal Server Error.' });
+            return res.status(500).json({ success: false, message: 'Failed to send OTP email. Please ensure your App Password is correct. Internal Server Error.' });
         }
     } else {
-        // Fallback Simulation for local testing or SMS mode
+        // Fallback Simulation for SMS/Phone type inputs
         console.log(`\n========================================`);
         console.log(`📨 [OTP SIMULATION] Target: ${contact}`);
         console.log(`🔑 Verification code: ${otp}`);
         console.log(`========================================\n`);
     }
 
-    res.json({ success: true, message: 'OTP verification sent securely!' });
+    res.json({ success: true, message: 'If everything is configured securely, your OTP is on the way!' });
 });
 
 app.post('/api/verify-otp', (req, res) => {
