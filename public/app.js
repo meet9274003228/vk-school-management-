@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Check Auth
+    // Auth Check
     const token = localStorage.getItem('auth_token');
-    if (!token) {
+    if (!token && window.location.pathname !== '/login.html') {
         window.location.href = '/login.html';
         return;
     }
@@ -17,24 +17,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle Navigation Clicks
+    // Switch Views
     navBtns.forEach(btn => {
+        if(btn.id === 'logout-btn') return;
         btn.addEventListener('click', () => {
-            // Remove active class
             navBtns.forEach(b => b.classList.remove('active'));
-            // Add active class
             btn.classList.add('active');
-            
-            const target = btn.getAttribute('data-target');
-            loadContent(target);
+            loadContent(btn.getAttribute('data-target'));
         });
     });
 
-    // Default Load
     loadContent('dashboard');
 
     async function loadContent(view) {
-        contentArea.innerHTML = '<div class="loading">Loading...</div>';
+        contentArea.innerHTML = `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Fetching ${view}...</p>
+            </div>`;
         
         try {
             if (view === 'dashboard') {
@@ -49,91 +49,170 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderTeachers(data);
             }
         } catch (error) {
-            contentArea.innerHTML = `<div class="loading" style="color: #ef4444;">Error loading data. Is the server running?</div>`;
+            contentArea.innerHTML = `<div class="loading-state"><p style="color:var(--danger)">Network Error: Could not connect to API</p></div>`;
         }
     }
 
     function renderDashboard() {
-        // Just mock some stats
         contentArea.innerHTML = `
-            <h2>System Overview</h2>
-            <br>
+            <div class="section-header">
+                <h1>Overview</h1>
+                <p>Welcome back, Admin. Here's what's happening today.</p>
+            </div>
+            
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="surface-card stat-card">
                     <h3>Total Students</h3>
-                    <div class="value">345</div>
+                    <div class="value">1,245</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Total Teachers</h3>
-                    <div class="value">28</div>
+                <div class="surface-card stat-card">
+                    <h3>Active Teachers</h3>
+                    <div class="value">84</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Average Attendance</h3>
-                    <div class="value">94%</div>
+                <div class="surface-card stat-card">
+                    <h3>Avg. Attendance</h3>
+                    <div class="value">96%</div>
                 </div>
             </div>
+
+            <div class="chart-container">
+                <canvas id="attendanceChart"></canvas>
+            </div>
         `;
+
+        // Render Chart.js beautifully!
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        
+        // Create an elegant gradient fill
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Primary color
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                datasets: [{
+                    label: 'Campus Attendance (%)',
+                    data: [94, 96, 95, 98, 93],
+                    borderColor: '#6366f1',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ec4899',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                color: '#a1a1aa',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(24, 24, 27, 0.9)',
+                        titleFont: { family: 'Plus Jakarta Sans', size: 14 },
+                        bodyFont: { family: 'Plus Jakarta Sans', size: 14 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a1a1aa' }, min: 80, max: 100 }
+                }
+            }
+        });
     }
 
     function renderStudents(students) {
         let html = `
-            <h2>Student Directory</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Grade</th>
-                        <th>Attendance</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="section-header">
+                <h1>Student Master Roster</h1>
+                <p>Manage and monitor student statuses across all grades.</p>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Grade</th>
+                            <th>Attendance</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
 
         students.forEach(s => {
+            const avatarUrl = \`https://ui-avatars.com/api/?name=\${s.name.replace(' ', '+')}&background=random&color=fff\`;
             html += `
                 <tr>
-                    <td>#${s.id}</td>
-                    <td style="font-weight: 500;">${s.name}</td>
-                    <td>${s.grade}</td>
-                    <td>${s.attendance}</td>
-                    <td><span class="badge">Active</span></td>
+                    <td>
+                        <div class="user-cell">
+                            <img src="\${avatarUrl}" class="user-avatar" alt="Avatar"/>
+                            <div>
+                                <div class="user-name">\${s.name}</div>
+                                <div class="user-sub">#ID-00\${s.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-weight: 500;">\${s.grade}</td>
+                    <td>\${s.attendance}</td>
+                    <td><span class="badge badge-success">Enrolled</span></td>
                 </tr>
             `;
         });
 
-        html += `</tbody></table>`;
+        html += `</tbody></table></div>`;
         contentArea.innerHTML = html;
     }
 
     function renderTeachers(teachers) {
         let html = `
-            <h2>Teacher Roster</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Subject</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="section-header">
+                <h1>Faculty Directory</h1>
+                <p>Manage the teaching staff assignments.</p>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Subject Speciality</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
         `;
 
         teachers.forEach(t => {
+            const avatarUrl = \`https://ui-avatars.com/api/?name=\${t.name.replace(' ', '+')}&background=ec4899&color=fff\`;
             html += `
                 <tr>
-                    <td>#${t.id}</td>
-                    <td style="font-weight: 500;">${t.name}</td>
-                    <td>${t.subject}</td>
-                    <td><span class="badge" style="background: rgba(236,72,153,0.15); color: #f472b6; border-color: rgba(236,72,153,0.3);">Tenured</span></td>
+                    <td>
+                        <div class="user-cell">
+                            <img src="\${avatarUrl}" class="user-avatar" alt="Avatar"/>
+                            <div>
+                                <div class="user-name">\${t.name}</div>
+                                <div class="user-sub">Faculty ID: \${t.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>\${t.subject}</td>
+                    <td><span class="badge badge-pink">Tenured</span></td>
+                    <td><a href="#" style="color:var(--primary-light); text-decoration:none;">View Profile</a></td>
                 </tr>
             `;
         });
 
-        html += `</tbody></table>`;
+        html += `</tbody></table></div>`;
         contentArea.innerHTML = html;
     }
 });
