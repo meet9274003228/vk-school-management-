@@ -47,6 +47,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/teachers');
                 const data = await res.json();
                 renderTeachers(data);
+            } else if (view === 'courses') {
+                const res = await fetch('/api/courses');
+                const data = await res.json();
+                renderCourses(data);
+            } else if (view === 'grades') {
+                const res = await fetch('/api/grades');
+                const data = await res.json();
+                renderGrades(data);
             }
         } catch (error) {
             contentArea.innerHTML = `<div class="loading-state"><p style="color:var(--danger)">Network Error: Could not connect to API</p></div>`;
@@ -263,6 +271,77 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${t.subject}</td>
                     <td><span class="badge badge-pink">Tenured</span></td>
                     <td><a href="#" style="color:var(--primary-light); text-decoration:none;">View Profile</a></td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contentArea.innerHTML = html;
+    }
+
+    function renderCourses(courses) {
+        let html = `
+            <div class="section-header">
+                <h1>Active Courses</h1>
+                <p>Curriculum currently offered this semester.</p>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Course Name</th>
+                            <th>Lead Instructor</th>
+                            <th>Enrolled</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        courses.forEach(c => {
+            html += `
+                <tr>
+                    <td style="font-weight: 600; color:#fff;">${c.title} <span style="display:block; font-size:0.8rem; color:var(--text-muted); font-weight:normal;">CODE-${c.id}</span></td>
+                    <td>${c.teacher}</td>
+                    <td>${c.students} Students</td>
+                    <td><span class="badge badge-success">Ongoing</span></td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contentArea.innerHTML = html;
+    }
+
+    function renderGrades(grades) {
+        let html = `
+            <div class="section-header">
+                <h1>Recent Exam Grades</h1>
+                <p>Performance metrics from the latest assessment periods.</p>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Course & Assessment</th>
+                            <th>Score</th>
+                            <th>Standing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        grades.forEach(g => {
+            let badgeClass = 'badge-success';
+            if(g.status === 'Average') badgeClass = 'badge-pink';
+            
+            html += `
+                <tr>
+                    <td style="font-weight: 600; color:#fff;">${g.student}</td>
+                    <td>${g.course} <span style="display:block; font-size:0.8rem; color:var(--text-muted); font-weight:normal;">${g.exam}</span></td>
+                    <td style="font-size: 1.1rem; font-weight:bold; color:#fff;">${g.score}</td>
+                    <td><span class="badge ${badgeClass}">${g.status}</span></td>
                 </tr>
             `;
         });

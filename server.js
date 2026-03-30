@@ -29,6 +29,18 @@ let teachers = [
   { id: 2, name: 'Mrs. Davis', subject: 'History' }
 ];
 
+let courses = [
+  { id: 101, title: 'Advanced Physics', teacher: 'Mr. Anderson', students: 28 },
+  { id: 102, title: 'World History', teacher: 'Mrs. Davis', students: 34 },
+  { id: 103, title: 'Computer Science', teacher: 'Dr. Smith', students: 22 }
+];
+
+let grades = [
+  { student: 'John Doe', course: 'Advanced Physics', exam: 'Midterm', score: '92%', status: 'Excellent' },
+  { student: 'Jane Smith', course: 'World History', exam: 'Final', score: '88%', status: 'Good' },
+  { student: 'Sam Wilson', course: 'Computer Science', exam: 'Quiz 1', score: '75%', status: 'Average' }
+];
+
 // --- Mock Auth & DB ---
 const USERS = {
     'admin': 'password123'
@@ -104,6 +116,8 @@ app.post('/api/verify-otp', (req, res) => {
 // --- Simple API Endpoints ---
 app.get('/api/students', (req, res) => { res.json(students); });
 app.get('/api/teachers', (req, res) => { res.json(teachers); });
+app.get('/api/courses', (req, res) => { res.json(courses); });
+app.get('/api/grades', (req, res) => { res.json(grades); });
 
 // Fallback to serving the main index.html file
 app.get('*', (req, res) => {
