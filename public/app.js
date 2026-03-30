@@ -54,78 +54,133 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderDashboard() {
+        const user = localStorage.getItem('auth_user') || 'Admin';
+        const hour = new Date().getHours();
+        let greeting = 'Good evening';
+        if (hour < 12) greeting = 'Good morning';
+        else if (hour < 18) greeting = 'Good afternoon';
+
         contentArea.innerHTML = `
             <div class="section-header">
-                <h1>Overview</h1>
-                <p>Welcome back, Admin. Here's what's happening today.</p>
+                <h1>${greeting}, ${user}!</h1>
+                <p>Here is your intelligent overview for today.</p>
             </div>
             
             <div class="stats-grid">
                 <div class="surface-card stat-card">
-                    <h3>Total Students</h3>
-                    <div class="value">1,245</div>
+                    <h3>Total Enrolled</h3>
+                    <div class="value">1,245<span style="font-size:0.9rem; color:var(--success); margin-left:8px;">↑ 12%</span></div>
+                    <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:12px; overflow:hidden;">
+                        <div style="height:100%; width:85%; background:var(--primary-light);"></div>
+                    </div>
                 </div>
                 <div class="surface-card stat-card">
                     <h3>Active Teachers</h3>
-                    <div class="value">84</div>
+                    <div class="value">84<span style="font-size:0.9rem; color:var(--success); margin-left:8px;">↑ 3%</span></div>
+                    <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:12px; overflow:hidden;">
+                        <div style="height:100%; width:92%; background:var(--secondary);"></div>
+                    </div>
                 </div>
                 <div class="surface-card stat-card">
-                    <h3>Avg. Attendance</h3>
-                    <div class="value">96%</div>
+                    <h3>Campus Safety Index</h3>
+                    <div class="value">99.8%<span style="font-size:0.9rem; color:var(--text-muted); margin-left:8px;">- 0%</span></div>
+                    <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:12px; overflow:hidden;">
+                        <div style="height:100%; width:99%; background:#38bdf8;"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <canvas id="attendanceChart"></canvas>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 28px; margin-top: 20px;">
+                <!-- Main Chart -->
+                <div class="surface-card" style="padding:24px;">
+                    <h3 style="margin-bottom:16px; color:var(--text-main); font-weight:600;">Attendance Trends</h3>
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Secondary Column -->
+                <div style="display:flex; flex-direction:column; gap:28px;">
+                    <!-- Activity Feed -->
+                    <div class="surface-card" style="padding:24px; flex:1;">
+                        <h3 style="margin-bottom:16px; color:var(--text-main); font-weight:600;">Live Feed</h3>
+                        <div style="display:flex; flex-direction:column; gap:16px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:10px; height:10px; border-radius:50%; background:var(--primary-light);"></div>
+                                <div style="font-size:0.9rem;"><strong style="color:#fff;">Mr. Anderson</strong> posted grades. <span style="color:var(--text-muted); font-size:0.8rem;">2 min ago</span></div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:10px; height:10px; border-radius:50%; background:var(--secondary);"></div>
+                                <div style="font-size:0.9rem;"><strong style="color:#fff;">Jane Smith</strong> registered for AP Physics. <span style="color:var(--text-muted); font-size:0.8rem;">15 min ago</span></div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:10px; height:10px; border-radius:50%; background:#38bdf8;"></div>
+                                <div style="font-size:0.9rem;"><strong style="color:#fff;">System</strong> completed daily backup. <span style="color:var(--text-muted); font-size:0.8rem;">1 hr ago</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Doughnut Chart -->
+                    <div class="surface-card" style="padding:24px;">
+                        <h3 style="margin-bottom:16px; color:var(--text-main); font-weight:600;">Demographics</h3>
+                        <div style="height: 180px; width: 100%;">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
 
-        // Render Chart.js beautifully!
-        const ctx = document.getElementById('attendanceChart').getContext('2d');
-        
-        // Create an elegant gradient fill
-        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.5)'); // Primary color
-        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+        // Render Main Line Chart
+        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        let gradientMain = ctxMain.createLinearGradient(0, 0, 0, 300);
+        gradientMain.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+        gradientMain.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-        new Chart(ctx, {
+        new Chart(ctxMain, {
             type: 'line',
             data: {
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
                 datasets: [{
                     label: 'Campus Attendance (%)',
-                    data: [94, 96, 95, 98, 93],
-                    borderColor: '#6366f1',
-                    backgroundColor: gradient,
+                    data: [85, 96, 95, 98, 93],
+                    borderColor: '#818cf8',
+                    backgroundColor: gradientMain,
                     borderWidth: 3,
                     pointBackgroundColor: '#ec4899',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointRadius: 5,
-                    pointHoverRadius: 7,
                     fill: true,
                     tension: 0.4
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                color: '#a1a1aa',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(24, 24, 27, 0.9)',
-                        titleFont: { family: 'Plus Jakarta Sans', size: 14 },
-                        bodyFont: { family: 'Plus Jakarta Sans', size: 14 },
-                        padding: 12,
-                        cornerRadius: 8,
-                        displayColors: false
-                    }
-                },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#a1a1aa' } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }, ticks: { color: '#a1a1aa' }, min: 80, max: 100 }
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, ticks: { color: '#94a3b8' }, min: 80, max: 100 }
                 }
+            }
+        });
+
+        // Render Doughnut Chart
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Freshmen', 'Sophomores', 'Juniors', 'Seniors'],
+                datasets: [{
+                    data: [35, 25, 20, 20],
+                    backgroundColor: ['#6366f1', '#ec4899', '#38bdf8', '#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: {family: 'Plus Jakarta Sans'} } } },
+                cutout: '70%'
             }
         });
     }

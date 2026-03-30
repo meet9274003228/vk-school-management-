@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.success) {
                 localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('auth_user', data.user || 'Guest');
                 window.location.href = '/index.html';
             } else {
                 showMessage(data.message, true);

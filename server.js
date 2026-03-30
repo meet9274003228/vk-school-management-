@@ -38,10 +38,11 @@ const otpStore = new Map();
 // --- Auth Endpoints ---
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    if (USERS[username] && USERS[username] === password) {
-        return res.json({ success: true, token: 'mock-jwt-token-xyz' });
+    // Universal Access Bypass: Accept any credentials
+    if (username && password) {
+        return res.json({ success: true, token: 'universal-mock-token-xyz', user: username });
     }
-    return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    return res.status(401).json({ success: false, message: 'Please enter any username and password to enter.' });
 });
 
 app.post('/api/forgot-password', async (req, res) => {
