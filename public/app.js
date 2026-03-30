@@ -207,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <th>Grade</th>
                             <th>Attendance</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -228,12 +229,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-weight: 500;">${s.grade}</td>
                     <td>${s.attendance}</td>
                     <td><span class="badge badge-success">Enrolled</span></td>
+                    <td><button class="nav-btn profile-btn" style="padding: 6px 12px; font-size: 0.85rem;" data-id="${s.id}">View Profile</button></td>
                 </tr>
             `;
         });
 
         html += `</tbody></table></div>`;
         contentArea.innerHTML = html;
+
+        document.querySelectorAll('.profile-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                loadStudentProfile(id);
+            });
+        });
     }
 
     function renderTeachers(teachers) {
@@ -348,5 +357,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
         html += `</tbody></table></div>`;
         contentArea.innerHTML = html;
+    }
+
+    async function loadStudentProfile(id) {
+        contentArea.innerHTML = `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading Profile Data...</p>
+            </div>`;
+        try {
+            const res = await fetch(`/api/students/${id}`);
+            if(!res.ok) throw new Error("Not found");
+            const data = await res.json();
+            renderStudentProfile(data);
+        } catch (error) {
+            contentArea.innerHTML = `<div class="loading-state"><p style="color:var(--danger)">Error loading profile.</p><button class="btn-primary" onclick="window.location.reload()">Refresh Page</button></div>`;
+        }
+    }
+
+    function renderStudentProfile(data) {
+        const s = data.student;
+        const grades = data.grades;
+        const avatarUrl = `https://ui-avatars.com/api/?name=${s.name.replace(' ', '+')}&background=6366f1&color=fff&size=128`;
+        
+        let gradesHtml = '';
+        if(grades.length === 0) {
+            gradesHtml = '<p style="color:var(--text-muted)">No recent grades found.</p>';
+        } else {
+            grades.forEach(g => {
+                let badgeClass = 'badge-success';
+                if(g.status === 'Average') badgeClass = 'badge-pink';
+                gradesHtml += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <div>
+                            <div style="font-weight:600; color:#fff;">${g.course}</div>
+                            <div style="font-size:0.85rem; color:var(--text-muted);">${g.exam}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.1rem; font-weight:bold; color:#fff;">${g.score}</div>
+                            <span class="badge ${badgeClass}" style="font-size:0.7rem;">${g.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        contentArea.innerHTML = `
+            <div style="margin-bottom: 24px; animation: slideDown 0.4s ease forwards;">
+                <button class="nav-btn" id="back-to-students" style="padding: 10px 20px; margin-bottom: 20px; background: rgba(255,255,255,0.05); color:#fff;">
+                    ← Back to Roster
+                </button>
+                <div class="surface-card" style="display:flex; align-items:center; gap:28px; padding:32px;">
+                    <img src="${avatarUrl}" style="border-radius:50%; width:100px; height:100px; box-shadow:0 10px 25px rgba(0,0,0,0.5); border:3px solid var(--primary-light);" />
+                    <div>
+                        <h1 style="font-size:2.5rem; color:#fff; letter-spacing:-1px; margin-bottom:4px;">${s.name}</h1>
+                        <p style="color:var(--primary-light); font-size:1.1rem; font-weight:500;">Grade: ${s.grade} | Attendance: ${s.attendance}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:28px; animation: slideUp 0.6s ease forwards;">
+                <div class="surface-card" style="padding:32px;">
+                    <h2 style="font-size:1.3rem; margin-bottom:24px; color:#fff; font-weight:700;">Personal Information</h2>
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Email Address</div>
+                            <div style="font-size:1.05rem; color:#fff;">${s.email}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Phone Number</div>
+                            <div style="font-size:1.05rem; color:#fff;">${s.phone}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Home Address</div>
+                            <div style="font-size:1.05rem; color:#fff;">${s.address}</div>
+                        </div>
+                        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin: 8px 0;" />
+                        <div>
+                            <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Primary Guardian</div>
+                            <div style="font-size:1.05rem; color:#fff;">${s.parentName} <span style="color:var(--text-muted); font-size:0.9rem; margin-left:8px;">${s.parentPhone}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="surface-card" style="padding:32px;">
+                    <h2 style="font-size:1.3rem; margin-bottom:24px; color:#fff; font-weight:700;">Academic Performance</h2>
+                    <div style="display:flex; flex-direction:column;">
+                        ${gradesHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('back-to-students').addEventListener('click', () => {
+            document.querySelector('.nav-btn[data-target="students"]').click();
+        });
     }
 });

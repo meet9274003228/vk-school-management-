@@ -19,9 +19,9 @@ const transporter = nodemailer.createTransport({
 
 // --- Mock Data ---
 let students = [
-  { id: 1, name: 'John Doe', grade: '10th', attendance: '95%' },
-  { id: 2, name: 'Jane Smith', grade: '11th', attendance: '98%' },
-  { id: 3, name: 'Sam Wilson', grade: '9th', attendance: '88%' }
+  { id: 1, name: 'John Doe', grade: '10th', attendance: '95%', email: 'john.doe@student.edu', phone: '(555) 123-4567', parentName: 'Michael Doe', parentPhone: '(555) 987-6543', address: '123 Academic Way, Education City, ST 12345' },
+  { id: 2, name: 'Jane Smith', grade: '11th', attendance: '98%', email: 'jane.smith@student.edu', phone: '(555) 234-5678', parentName: 'Sarah Smith', parentPhone: '(555) 876-5432', address: '456 Scholars Ave, Knowledge Town, ST 67890' },
+  { id: 3, name: 'Sam Wilson', grade: '9th', attendance: '88%', email: 'sam.wilson@student.edu', phone: '(555) 345-6789', parentName: 'David Wilson', parentPhone: '(555) 765-4321', address: '789 Learning Blvd, Wisdom Valley, ST 13579' }
 ];
 
 let teachers = [
@@ -115,6 +115,13 @@ app.post('/api/verify-otp', (req, res) => {
 
 // --- Simple API Endpoints ---
 app.get('/api/students', (req, res) => { res.json(students); });
+app.get('/api/students/:id', (req, res) => {
+    const studentId = parseInt(req.params.id);
+    const student = students.find(s => s.id === studentId);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    const studentGrades = grades.filter(g => g.student === student.name);
+    res.json({ student, grades: studentGrades });
+});
 app.get('/api/teachers', (req, res) => { res.json(teachers); });
 app.get('/api/courses', (req, res) => { res.json(courses); });
 app.get('/api/grades', (req, res) => { res.json(grades); });
