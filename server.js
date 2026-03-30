@@ -52,11 +52,8 @@ app.post('/api/forgot-password', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
     otpStore.set(contact, otp);
     
-    // Attempt real email dispatch if format looks like email
-    if (contact.includes('@')) {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            return res.status(500).json({ success: false, message: 'Email Server Not Configured: You must add EMAIL_USER and EMAIL_PASS to your Render Environment Variables!' });
-        }
+    // Attempt real email dispatch if environment variables are set
+    if (contact.includes('@') && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         try {
             await transporter.sendMail({
                 from: `"Sangarsh Science Education" <${process.env.EMAIL_USER}>`,
