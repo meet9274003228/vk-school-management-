@@ -10,6 +10,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentArea = document.getElementById('content-area');
     const logoutBtn = document.getElementById('logout-btn');
 
+    // Creative Elements Init
+    const cursor = document.querySelector('.cursor-glow');
+    if (cursor) {
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        const addCursorHover = () => {
+            document.querySelectorAll('button, a, input, .surface-card, .data-table tr').forEach(el => {
+                if(!el.dataset.cursorBound) {
+                    el.addEventListener('mouseenter', () => cursor.classList.add('active'));
+                    el.addEventListener('mouseleave', () => cursor.classList.remove('active'));
+                    el.dataset.cursorBound = 'true';
+                }
+            });
+        };
+        // Re-bind cursor on mutations
+        const observer = new MutationObserver(() => addCursorHover());
+        observer.observe(document.body, { childList: true, subtree: true });
+        addCursorHover();
+    }
+
+    if (window.particlesJS) {
+        particlesJS('particles-js', {
+            particles: { number: { value: 60, density: { enable: true, value_area: 800 } }, color: { value: '#6366f1' }, shape: { type: 'circle' }, opacity: { value: 0.3, random: true }, size: { value: 3, random: true }, line_linked: { enable: true, distance: 150, color: '#818cf8', opacity: 0.2, width: 1 }, move: { enable: true, speed: 1.2, out_mode: 'out' } },
+            interactivity: { detect_on: 'canvas', events: { onhover: { enable: true, mode: 'grab' }, onclick: { enable: true, mode: 'push' }, resize: true }, modes: { grab: { distance: 140, line_linked: { opacity: 0.8 } } } }, retina_detect: true
+        });
+    }
+
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('auth_token');
@@ -69,12 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (hour < 18) greeting = 'Good afternoon';
 
         contentArea.innerHTML = `
-            <div class="section-header">
+            <div class="section-header stagger-1">
                 <h1>${greeting}, ${user}!</h1>
-                <p>Here is your intelligent overview for today.</p>
+                <p class="typewriter-cursor" id="dashboard-subtitle"></p>
             </div>
             
-            <div class="stats-grid">
+            <div class="stats-grid stagger-2">
                 <div class="surface-card stat-card">
                     <h3>Total Enrolled</h3>
                     <div class="value">1,245<span style="font-size:0.9rem; color:var(--success); margin-left:8px;">↑ 12%</span></div>
@@ -98,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 28px; margin-top: 20px;">
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 28px; margin-top: 20px;" class="stagger-3">
                 <!-- Main Chart -->
                 <div class="surface-card" style="padding:24px;">
                     <h3 style="margin-bottom:16px; color:var(--text-main); font-weight:600;">Attendance Trends</h3>
@@ -191,15 +220,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 cutout: '70%'
             }
         });
+
+        // Typewriter Effect
+        const phrases = ["Here is your intelligent overview for today.", "Welcome to the future of education.", "Streamlining modern school management."];
+        let i = 0, j = 0, currentPhrase = [];
+        let isDeleting = false, isEnd = false;
+        
+        function loop() {
+            const el = document.getElementById('dashboard-subtitle');
+            if(!el) return;
+            isEnd = false;
+            el.innerHTML = currentPhrase.join('');
+            
+            if (i < phrases.length) {
+                if (!isDeleting && j <= phrases[i].length) {
+                    currentPhrase.push(phrases[i][j]);
+                    j++; el.innerHTML = currentPhrase.join('');
+                }
+                if(isDeleting && j <= phrases[i].length) {
+                    currentPhrase.pop();
+                    j--; el.innerHTML = currentPhrase.join('');
+                }
+                if (j == phrases[i].length) {
+                    isEnd = true; isDeleting = true;
+                }
+                if (isDeleting && j === 0) {
+                    currentPhrase = []; isDeleting = false;
+                    i++; if (i == phrases.length) i = 0;
+                }
+            }
+            const spedUp = Math.random() * (80 - 50) + 50;
+            const normalSpeed = Math.random() * (150 - 100) + 100;
+            setTimeout(loop, isEnd ? 2000 : isDeleting ? spedUp : normalSpeed);
+        }
+        loop();
     }
 
     function renderStudents(students) {
         let html = `
-            <div class="section-header">
+            <div class="section-header stagger-1">
                 <h1>Student Master Roster</h1>
                 <p>Manage and monitor student statuses across all grades.</p>
             </div>
-            <div class="table-container">
+            <div class="table-container stagger-2">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -247,11 +310,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTeachers(teachers) {
         let html = `
-            <div class="section-header">
+            <div class="section-header stagger-1">
                 <h1>Faculty Directory</h1>
                 <p>Manage the teaching staff assignments.</p>
             </div>
-            <div class="table-container">
+            <div class="table-container stagger-2">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -290,11 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCourses(courses) {
         let html = `
-            <div class="section-header">
+            <div class="section-header stagger-1">
                 <h1>Active Courses</h1>
                 <p>Curriculum currently offered this semester.</p>
             </div>
-            <div class="table-container">
+            <div class="table-container stagger-2">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -324,11 +387,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderGrades(grades) {
         let html = `
-            <div class="section-header">
+            <div class="section-header stagger-1">
                 <h1>Recent Exam Grades</h1>
                 <p>Performance metrics from the latest assessment periods.</p>
             </div>
-            <div class="table-container">
+            <div class="table-container stagger-2">
                 <table class="data-table">
                     <thead>
                         <tr>
